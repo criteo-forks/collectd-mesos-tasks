@@ -6,14 +6,6 @@ import urllib2
 
 CONFIGS = []
 
-METRICS = {
-    "cpus_limit": 1000,
-    "cpus_system_time_secs": 1000,
-    "cpus_user_time_secs": 1000,
-    "mem_limit_bytes": 1,
-    "mem_rss_bytes": 1
-}
-
 def configure_callback(conf):
     """Receive configuration"""
 
@@ -80,21 +72,19 @@ def read_stats(conf):
             continue
 
         info = tasks[task["source"]]
-        if "collectd_app" not in info["labels"]:
+        if "do_not_track" in info["labels"]:
             continue
 
-        app = info["labels"]["collectd_app"].replace(".", "_")
-        instance = task["source"].replace(".", "_")
+        instance = task["source"]
 
-        for metric, multiplier in METRICS.iteritems():
-            if metric not in task["statistics"]:
-                continue
-
+        for metric, value in task["statistics"].iteritems():
+            if metric == 'timestamp':
+              continue
             val = collectd.Values(plugin="mesos-tasks")
             val.type = "gauge"
-            val.plugin_instance = app + "." + instance
+            val.plugin_instance = instance
             val.type_instance = metric
-            val.values = [int(task["statistics"][metric] * multiplier)]
+            val.values = [value]
             val.dispatch()
 
 def read_callback():
