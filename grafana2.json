@@ -1,5 +1,5 @@
 {
-  "id": 494,
+  "id": 2,
   "title": "Mesos tasks",
   "originalTitle": "Mesos tasks",
   "tags": [],
@@ -66,15 +66,88 @@
           "steppedLine": false,
           "targets": [
             {
-              "target": "alias(averageSeries(central.collectd.$dc.default.$host.mesos-tasks-$app*.gauge-cpus_limit), 'limit')"
+              "target": "alias(averageSeries(collectd.*.mesos-tasks.$app.$task.gauge.cpus_limit), 'limit')"
             },
             {
-              "target": "aliasByNode(derivative(sumSeriesWithWildcards(central.collectd.$dc.default.$host.mesos-tasks-$app*.gauge-cpus_{user,system}_time_secs, 1, 6)), 4)"
+              "hide": false,
+              "target": "aliasByNode(scaleToSeconds(sumSeriesWithWildcards(derivative(collectd.*.mesos-tasks.$app.$task.gauge.cpus_{user,system}_time_secs), 1, 6), 1), 3)"
             }
           ],
           "timeFrom": null,
           "timeShift": null,
           "title": "CPU usage per task",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ]
+        },
+        {
+          "aliasColors": {
+            "limit": "#E24D42",
+            "system": "#E24D42",
+            "user": "#508642"
+          },
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 1,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": 0,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 4,
+          "legend": {
+            "alignAsTable": true,
+            "avg": false,
+            "current": true,
+            "hideEmpty": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 2,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "hide": false,
+              "target": "alias(sumSeriesWithWildcards(scaleToSeconds(derivative(collectd.*.mesos-tasks.$app.$task.gauge.cpus_system_time_secs), 1), 1, 4), 'system')"
+            },
+            {
+              "hide": false,
+              "target": "alias(sumSeriesWithWildcards(scaleToSeconds(derivative(collectd.*.mesos-tasks.$app.$task.gauge.cpus_user_time_secs), 1), 1, 4), 'user')"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "CPU usage by type",
           "tooltip": {
             "shared": true,
             "value_type": "cumulative"
@@ -136,13 +209,6 @@
           "pointradius": 5,
           "points": false,
           "renderer": "flot",
-          "scopedVars": {
-            "app": {
-              "selected": false,
-              "text": "cactus",
-              "value": "cactus"
-            }
-          },
           "seriesOverrides": [
             {
               "alias": "limit",
@@ -155,10 +221,10 @@
           "targets": [
             {
               "hide": false,
-              "target": "alias(averageSeries(central.collectd.$dc.default.$host.mesos-tasks-$app*.gauge-mem_limit_bytes), 'limit')"
+              "target": "alias(averageSeries(collectd.*.mesos-tasks.$app.$task.gauge.mem_limit_bytes), 'limit')"
             },
             {
-              "target": "aliasByNode(central.collectd.$dc.default.$host.mesos-tasks-$app*.gauge-mem_rss_bytes, 5)"
+              "target": "aliasByNode(collectd.*.mesos-tasks.$app.$task.gauge.mem_rss_bytes, 4)"
             }
           ],
           "timeFrom": null,
@@ -175,23 +241,7 @@
             "bytes",
             "short"
           ]
-        }
-      ],
-      "repeat": null,
-      "scopedVars": {
-        "app": {
-          "selected": false,
-          "text": "cactus",
-          "value": "cactus"
-        }
-      },
-      "title": "Row"
-    },
-    {
-      "collapse": false,
-      "editable": true,
-      "height": "350px",
-      "panels": [
+        },
         {
           "aliasColors": {},
           "bars": false,
@@ -201,8 +251,8 @@
           "fill": 1,
           "grid": {
             "leftLogBase": 1,
-            "leftMax": null,
-            "leftMin": null,
+            "leftMax": 100,
+            "leftMin": 0,
             "rightLogBase": 1,
             "rightMax": null,
             "rightMin": null,
@@ -215,54 +265,41 @@
           "leftYAxisLabel": "",
           "legend": {
             "alignAsTable": true,
-            "avg": true,
+            "avg": false,
             "current": true,
-            "hideEmpty": false,
-            "max": true,
-            "min": true,
-            "rightSide": false,
+            "hideEmpty": true,
+            "max": false,
+            "min": false,
             "show": true,
             "total": false,
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
-          "links": [
-            {
-              "name": "Drilldown dashboard",
-              "type": "dashboard"
-            }
-          ],
+          "linewidth": 2,
+          "links": [],
           "nullPointMode": "null",
           "percentage": false,
           "pointradius": 5,
           "points": false,
           "renderer": "flot",
-          "rightYAxisLabel": "",
           "seriesOverrides": [
-            {
-              "alias": "gauge-cpus_limit",
-              "fill": 0
-            },
-            {
-              "alias": "gauge-mem_limit_bytes",
-              "fill": 0
-            }
+            {}
           ],
           "span": 6,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "target": "alias(central.collectd.$dc.default.$host.mesos-tasks-$app*.gauge-disk_limit_bytes, 'limit')"
+              "hide": true,
+              "target": "alias(averageSeries(collectd.*.mesos-tasks.$app.$task.gauge.mem_limit_bytes), 'limit')"
             },
             {
-              "target": "aliasByNode(central.collectd.$dc.default.$host.mesos-tasks-$app*.gauge-disk_used_bytes, 5)"
+              "target": "aliasByNode(asPercent(collectd.*.mesos-tasks.$app.$task.gauge.mem_rss_bytes, #A), 4)"
             }
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Disk usage per task",
+          "title": "Memory usage percent per task",
           "tooltip": {
             "shared": true,
             "value_type": "cumulative"
@@ -271,13 +308,12 @@
           "x-axis": true,
           "y-axis": true,
           "y_formats": [
-            "bytes",
-            "s"
-          ],
-          "height": "350px"
+            "percent",
+            "short"
+          ]
         }
       ],
-      "title": "New row"
+      "title": "Row"
     }
   ],
   "nav": [
@@ -322,270 +358,82 @@
       {
         "allFormat": "glob",
         "current": {
-          "text": "All",
-          "value": "{ny8,par}"
+          "text": "whatever_app",
+          "value": "whatever_app"
         },
         "datasource": null,
-        "includeAll": true,
-        "multi": true,
-        "multiFormat": "glob",
-        "name": "dc",
-        "options": [
-          {
-            "text": "All",
-            "value": "{ny8,par}"
-          },
-          {
-            "text": "ny8",
-            "value": "ny8"
-          },
-          {
-            "text": "par",
-            "value": "par"
-          }
-        ],
-        "query": "central.collectd.*",
-        "refresh": true,
-        "refresh_on_load": false,
-        "regex": "",
-        "type": "query"
-      },
-      {
-        "allFormat": "glob",
-        "current": {
-          "text": "All",
-          "value": "{mesos-slave002-par_central_criteo_preprod,mesos-slave003-par_central_criteo_preprod,mesos-slave004-par_central_criteo_preprod,mesos-slave01-par_central_criteo_preprod,mesos-slave01-parmcentralmcriteompreprod}"
-        },
-        "datasource": null,
-        "includeAll": true,
-        "multi": false,
-        "multiFormat": "glob",
-        "name": "host",
-        "options": [
-          {
-            "text": "All",
-            "value": "{mesos-slave002-par_central_criteo_preprod,mesos-slave003-par_central_criteo_preprod,mesos-slave004-par_central_criteo_preprod,mesos-slave01-par_central_criteo_preprod,mesos-slave01-parmcentralmcriteompreprod}"
-          },
-          {
-            "text": "mesos-slave002-par_central_criteo_preprod",
-            "value": "mesos-slave002-par_central_criteo_preprod"
-          },
-          {
-            "text": "mesos-slave003-par_central_criteo_preprod",
-            "value": "mesos-slave003-par_central_criteo_preprod"
-          },
-          {
-            "text": "mesos-slave004-par_central_criteo_preprod",
-            "value": "mesos-slave004-par_central_criteo_preprod"
-          },
-          {
-            "text": "mesos-slave01-par_central_criteo_preprod",
-            "value": "mesos-slave01-par_central_criteo_preprod"
-          },
-          {
-            "text": "mesos-slave01-parmcentralmcriteompreprod",
-            "value": "mesos-slave01-parmcentralmcriteompreprod"
-          }
-        ],
-        "query": "central.collectd.$dc.default.mesos-slave*",
-        "refresh": true,
-        "refresh_on_load": false,
-        "regex": "",
-        "type": "query"
-      },
-      {
-        "allFormat": "glob",
-        "current": {
-          "text": "cerebellum-monitoring-test",
-          "value": "cerebellum-monitoring-test",
-          "tags": []
-        },
-        "datasource": null,
-        "includeAll": true,
-        "multi": false,
+        "includeAll": false,
         "name": "app",
         "options": [
           {
-            "text": "All",
-            "value": "{cactus,cerebellum-monitoring-test,foocactus,foocerebellum-monitoring-test,foohello,foopac-rules-engine-basic-benchmark-preprod,foopac-rules-engine-ignite-server-preprod,foovizatra-opera,hello,hello_hello,imageproxy-loadtest,imageproxy-tester-moab,metrics_cactus,metrics_cerebellum-monitoring-test,metrics_compute-and-simulate,metrics_compute-and-simulate-virgil,metrics_hello,metrics_imageproxy-moab,metrics_imageproxy-tester-moab,metrics_pac-rules-engine-basic-benchmark-preprod,metrics_pac-rules-engine-ignite-server-preprod,metrics_pac-rules-engine-sandbox-preprod,metrics_pac-sandbox-preprod,metrics_pac-service-preprod,metrics_vizatra-opera,openam,pac-rules-engine-basic-benchmark-preprod,pac-rules-engine-ignite-benchmark-preprod,pac-rules-engine-ignite-server-preprod,pac-rules-engine-sandbox-preprod,pac-sandbox-preprod,pac-service-preprod,tracing-collector,vizatra-opera}",
-            "selected": false
+            "text": "whatever-balancer",
+            "value": "whatever-balancer"
           },
           {
-            "text": "cactus",
-            "value": "cactus",
-            "selected": false
-          },
-          {
-            "text": "cerebellum-monitoring-test",
-            "value": "cerebellum-monitoring-test",
-            "selected": true
-          },
-          {
-            "text": "foocactus",
-            "value": "foocactus",
-            "selected": false
-          },
-          {
-            "text": "foocerebellum-monitoring-test",
-            "value": "foocerebellum-monitoring-test",
-            "selected": false
-          },
-          {
-            "text": "foohello",
-            "value": "foohello",
-            "selected": false
-          },
-          {
-            "text": "foopac-rules-engine-basic-benchmark-preprod",
-            "value": "foopac-rules-engine-basic-benchmark-preprod",
-            "selected": false
-          },
-          {
-            "text": "foopac-rules-engine-ignite-server-preprod",
-            "value": "foopac-rules-engine-ignite-server-preprod",
-            "selected": false
-          },
-          {
-            "text": "foovizatra-opera",
-            "value": "foovizatra-opera",
-            "selected": false
-          },
-          {
-            "text": "hello",
-            "value": "hello",
-            "selected": false
-          },
-          {
-            "text": "hello_hello",
-            "value": "hello_hello",
-            "selected": false
-          },
-          {
-            "text": "imageproxy-loadtest",
-            "value": "imageproxy-loadtest",
-            "selected": false
-          },
-          {
-            "text": "imageproxy-tester-moab",
-            "value": "imageproxy-tester-moab",
-            "selected": false
-          },
-          {
-            "text": "metrics_cactus",
-            "value": "metrics_cactus",
-            "selected": false
-          },
-          {
-            "text": "metrics_cerebellum-monitoring-test",
-            "value": "metrics_cerebellum-monitoring-test",
-            "selected": false
-          },
-          {
-            "text": "metrics_compute-and-simulate",
-            "value": "metrics_compute-and-simulate",
-            "selected": false
-          },
-          {
-            "text": "metrics_compute-and-simulate-virgil",
-            "value": "metrics_compute-and-simulate-virgil",
-            "selected": false
-          },
-          {
-            "text": "metrics_hello",
-            "value": "metrics_hello",
-            "selected": false
-          },
-          {
-            "text": "metrics_imageproxy-moab",
-            "value": "metrics_imageproxy-moab",
-            "selected": false
-          },
-          {
-            "text": "metrics_imageproxy-tester-moab",
-            "value": "metrics_imageproxy-tester-moab",
-            "selected": false
-          },
-          {
-            "text": "metrics_pac-rules-engine-basic-benchmark-preprod",
-            "value": "metrics_pac-rules-engine-basic-benchmark-preprod",
-            "selected": false
-          },
-          {
-            "text": "metrics_pac-rules-engine-ignite-server-preprod",
-            "value": "metrics_pac-rules-engine-ignite-server-preprod",
-            "selected": false
-          },
-          {
-            "text": "metrics_pac-rules-engine-sandbox-preprod",
-            "value": "metrics_pac-rules-engine-sandbox-preprod",
-            "selected": false
-          },
-          {
-            "text": "metrics_pac-sandbox-preprod",
-            "value": "metrics_pac-sandbox-preprod",
-            "selected": false
-          },
-          {
-            "text": "metrics_pac-service-preprod",
-            "value": "metrics_pac-service-preprod",
-            "selected": false
-          },
-          {
-            "text": "metrics_vizatra-opera",
-            "value": "metrics_vizatra-opera",
-            "selected": false
-          },
-          {
-            "text": "openam",
-            "value": "openam",
-            "selected": false
-          },
-          {
-            "text": "pac-rules-engine-basic-benchmark-preprod",
-            "value": "pac-rules-engine-basic-benchmark-preprod",
-            "selected": false
-          },
-          {
-            "text": "pac-rules-engine-ignite-benchmark-preprod",
-            "value": "pac-rules-engine-ignite-benchmark-preprod",
-            "selected": false
-          },
-          {
-            "text": "pac-rules-engine-ignite-server-preprod",
-            "value": "pac-rules-engine-ignite-server-preprod",
-            "selected": false
-          },
-          {
-            "text": "pac-rules-engine-sandbox-preprod",
-            "value": "pac-rules-engine-sandbox-preprod",
-            "selected": false
-          },
-          {
-            "text": "pac-sandbox-preprod",
-            "value": "pac-sandbox-preprod",
-            "selected": false
-          },
-          {
-            "text": "pac-service-preprod",
-            "value": "pac-service-preprod",
-            "selected": false
-          },
-          {
-            "text": "tracing-collector",
-            "value": "tracing-collector",
-            "selected": false
-          },
-          {
-            "text": "vizatra-opera",
-            "value": "vizatra-opera",
-            "selected": false
+            "text": "whatever_app",
+            "value": "whatever_app"
           }
         ],
-        "query": "central.collectd.$dc.default.$host.mesos-tasks-*",
-        "refresh": true,
+        "query": "collectd.*.mesos-tasks.*",
         "refresh_on_load": false,
-        "regex": "/mesos-tasks-(.*)_.*/",
-        "type": "query"
+        "type": "query",
+        "refresh": true
+      },
+      {
+        "allFormat": "wildcard",
+        "current": {
+          "text": "All",
+          "value": "*"
+        },
+        "datasource": null,
+        "includeAll": true,
+        "name": "task",
+        "options": [
+          {
+            "text": "All",
+            "value": "*"
+          },
+          {
+            "text": "whatever_app_v1_0de28683-f242-11e4-bc23-3a45554b5e",
+            "value": "whatever_app_v1_0de28683-f242-11e4-bc23-3a45554b5e"
+          },
+          {
+            "text": "whatever_app_v1_0f13da94-f242-11e4-bc23-3a45554b5e",
+            "value": "whatever_app_v1_0f13da94-f242-11e4-bc23-3a45554b5e"
+          },
+          {
+            "text": "whatever_app_v1_1045a3d5-f242-11e4-bc23-3a45554b5e",
+            "value": "whatever_app_v1_1045a3d5-f242-11e4-bc23-3a45554b5e"
+          },
+          {
+            "text": "whatever_app_v1_44782a7c-f0b5-11e4-bc23-3a45554b5e",
+            "value": "whatever_app_v1_44782a7c-f0b5-11e4-bc23-3a45554b5e"
+          },
+          {
+            "text": "whatever_app_v1_4b99e14e-f0b5-11e4-bc23-3a45554b5e",
+            "value": "whatever_app_v1_4b99e14e-f0b5-11e4-bc23-3a45554b5e"
+          },
+          {
+            "text": "whatever_app_v1_4f2f641f-f0b5-11e4-bc23-3a45554b5e",
+            "value": "whatever_app_v1_4f2f641f-f0b5-11e4-bc23-3a45554b5e"
+          },
+          {
+            "text": "whatever_app_v1_a3d84400-f17e-11e4-bc23-3a45554b5e",
+            "value": "whatever_app_v1_a3d84400-f17e-11e4-bc23-3a45554b5e"
+          },
+          {
+            "text": "whatever_app_v1_a5a2a3c1-f17e-11e4-bc23-3a45554b5e",
+            "value": "whatever_app_v1_a5a2a3c1-f17e-11e4-bc23-3a45554b5e"
+          },
+          {
+            "text": "whatever_app_v1_a804fdc2-f17e-11e4-bc23-3a45554b5e",
+            "value": "whatever_app_v1_a804fdc2-f17e-11e4-bc23-3a45554b5e"
+          }
+        ],
+        "query": "collectd.*.mesos-tasks.$app.*",
+        "refresh_on_load": false,
+        "type": "query",
+        "refresh": true
       }
     ]
   },
@@ -593,6 +441,5 @@
     "list": []
   },
   "schemaVersion": 6,
-  "version": 27,
-  "links": []
+  "version": 9
 }
