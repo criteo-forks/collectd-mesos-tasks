@@ -3,16 +3,11 @@
 import collectd
 import json
 import urllib2
+import socket
+
+hostname = socket.gethostname()
 
 CONFIGS = []
-
-METRICS = {
-    "cpus_limit": 1000,
-    "cpus_system_time_secs": 1000,
-    "cpus_user_time_secs": 1000,
-    "mem_limit_bytes": 1,
-    "mem_rss_bytes": 1
-}
 
 def configure_callback(conf):
     """Receive configuration"""
@@ -41,8 +36,8 @@ def fetch_json(url):
         collectd.error("mesos-tasks plugin: Error connecting to %s - %r" % (url, e))
         return None
 
-def fetch_metrics(conf):
-    """Fetch metrics from slave"""
+def fetch_statistics(conf):
+    """Fetch fetch_statistics from slave"""
     return fetch_json("http://%s:%d/monitor/statistics.json" % (conf["host"], conf["port"]))
 
 def fetch_state(conf):
@@ -52,10 +47,10 @@ def fetch_state(conf):
 def read_stats(conf):
     """Read stats from specified slave"""
 
-    metrics = fetch_metrics(conf)
+    statistics = fetch_statistics(conf)
     state = fetch_state(conf)
 
-    if metrics is None or state is None:
+    if statistics is None or state is None:
         return
 
     tasks = {}
@@ -73,28 +68,44 @@ def read_stats(conf):
                 info["labels"] = labels
 
                 tasks[task["id"]] = info
+    # we will aggregate by app name
+    ordered_statistics = {}
+    for task in statistics:
+        app = task["executor_id"].split('.')[0]
+        if app not in ordered_statistics:
+	    ordered_statistics[app] = [task]
+	else:
+	    ordered_statistics[app].append(task)
 
-    for task in metrics:
-        if task["source"] not in tasks:
-            collectd.warning("mesos-tasks plugin: Task %s found in metrics, but missing in state" % task["source"])
-            continue
-
-        info = tasks[task["source"]]
-        if "collectd_app" not in info["labels"]:
-            continue
-
-        app = info["labels"]["collectd_app"].replace(".", "_")
-        instance = task["source"].replace(".", "_")
-
-        for metric, multiplier in METRICS.iteritems():
-            if metric not in task["statistics"]:
+    for app, app_stats in ordered_statistics.iteritems():
+        aggregated_metrics = {}
+        aggregated_metrics['count'] = len(app_stats) 
+    	for task in app_stats:
+            if task["source"] not in tasks:
+                collectd.warning("mesos-tasks plugin: Task %s found in statistics, but missing in state" % task["source"])
                 continue
 
+            info = tasks[task["source"]]
+            if "do_not_track" in info["labels"]:
+                continue
+
+            for metric, value in task["statistics"].iteritems():
+                if metric == 'timestamp':
+                    continue
+                if metric in aggregated_metrics:
+                    aggregated_metrics[metric] += value 
+                else:
+                    aggregated_metrics[metric] = value
+        for metric, value in aggregated_metrics.iteritems():
             val = collectd.Values(plugin="mesos-tasks")
             val.type = "gauge"
-            val.plugin_instance = app + "." + instance
-            val.type_instance = metric
-            val.values = [int(task["statistics"][metric] * multiplier)]
+            val.plugin_instance = "%s-%s" %(app, hostname)
+            val.type_instance = metric 
+            if metric == 'count':
+                val.values = [value]
+            else:
+                val.values = [value/aggregated_metrics['count']]
+            collectd.info("%s" %val)
             val.dispatch()
 
 def read_callback():
