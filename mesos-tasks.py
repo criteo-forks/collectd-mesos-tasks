@@ -20,6 +20,8 @@ def configure_callback(conf):
             host = node.values[0]
         elif node.key == "Port":
             port = int(node.values[0])
+        elif node.key == "ExcludedFrameworks":
+            excluded_frameworks = node.values[0].lowercase.split(",")
         else:
             collectd.warning("mesos-tasks plugin: Unknown config key: %s." % node.key)
 
@@ -56,6 +58,8 @@ def read_stats(conf):
     tasks = {}
 
     for framework in state["frameworks"]:
+        if framework["name"].lowercase in excluded_frameworks:
+          continue
         for executor in framework["executors"]:
             for task in executor["tasks"]:
                 info = {}
