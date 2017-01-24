@@ -6,7 +6,6 @@ import urllib2
 import socket
 
 hostname = socket.gethostname()
-excluded_frameworks = []
 
 CONFIGS = []
 
@@ -15,6 +14,7 @@ def configure_callback(conf):
 
     host = "127.0.0.1"
     port = 5051
+    excluded_frameworks = []
 
     for node in conf.children:
         if node.key == "Host":
@@ -29,6 +29,7 @@ def configure_callback(conf):
     CONFIGS.append({
         "host": host,
         "port": port,
+        "excluded_frameworks": excluded_frameworks
     })
 
 def fetch_json(url):
@@ -59,7 +60,7 @@ def read_stats(conf):
     tasks = {}
 
     for framework in state["frameworks"]:
-        if framework["name"].lower() in excluded_frameworks:
+        if framework["name"].lower() in conf["excluded_frameworks"]:
           continue
         for executor in framework["executors"]:
             for task in executor["tasks"]:
