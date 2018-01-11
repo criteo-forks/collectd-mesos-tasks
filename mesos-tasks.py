@@ -85,8 +85,8 @@ def read_stats(conf):
 
     for app, app_stats in ordered_statistics.iteritems():
         aggregated_metrics = {}
-        aggregated_metrics['count'] = len(app_stats) 
-    	for task in app_stats:
+        aggregated_metrics['count'] = len(app_stats)
+        for task in app_stats:
             if task["source"] not in tasks:
                 collectd.warning("mesos-tasks plugin: Task %s found in statistics, but missing in state" % task["source"])
                 continue
@@ -99,14 +99,14 @@ def read_stats(conf):
                 if metric == 'timestamp':
                     continue
                 if metric in aggregated_metrics:
-                    aggregated_metrics[metric] += value 
+                    aggregated_metrics[metric] += value
                 else:
                     aggregated_metrics[metric] = value
         for metric, value in aggregated_metrics.iteritems():
-            val = collectd.Values(plugin="mesos-tasks")
+            val = collectd.Values(plugin="mesos_tasks")
             val.type = "gauge"
             val.plugin_instance = "%s-%s" %(app, hostname)
-            val.type_instance = metric 
+            val.type_instance = metric
             if metric == 'count':
                 val.values = [value]
             else:
