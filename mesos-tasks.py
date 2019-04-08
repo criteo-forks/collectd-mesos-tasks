@@ -32,17 +32,17 @@ def configure_callback(conf):
         "excluded_frameworks": excluded_frameworks
     })
 
-def fetch_json(url):
+def fetch_json(url, timeout=5):
     """Fetch json from url"""
     try:
-        return json.load(urllib2.urlopen(url, timeout=5))
+        return json.load(urllib2.urlopen(url, timeout=timeout))
     except urllib2.URLError, e:
         collectd.error("mesos-tasks plugin: Error connecting to %s - %r" % (url, e))
         return None
 
 def fetch_statistics(conf):
     """Fetch fetch_statistics from slave"""
-    return fetch_json("http://%s:%d/monitor/statistics.json" % (conf["host"], conf["port"]))
+    return fetch_json("http://%s:%d/monitor/statistics.json" % (conf["host"], conf["port"]), timeout=30)
 
 def fetch_state(conf):
     """Fetch state from slave"""
