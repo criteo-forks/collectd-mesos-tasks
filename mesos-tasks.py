@@ -103,16 +103,32 @@ def read_stats(conf):
                 else:
                     aggregated_metrics[metric] = value
         for metric, value in aggregated_metrics.iteritems():
-            val = collectd.Values(plugin="mesos-tasks")
-            val.type = "gauge"
-            val.plugin_instance = "%s-%s" %(app, hostname)
-            val.type_instance = metric 
-            if metric == 'count':
-                val.values = [value]
+            read_metric(metric, value, aggregated_metrics['count'], app, None)
+
+def read_metric(metric, value, count, app, metric_prefix=None):
+    val = collectd.Values(plugin="mesos-tasks")
+    val.type = "gauge"
+    val.plugin_instance = "%s-%s" %(app, hostname)
+    if metric_prefix is None:
+        val.type_instance = metric
+    else:
+        val.type_instance = "%s-%s" % (metric_prefix, metric )
+    if metric == 'count':
+        val.values = [value]
+    elif isinstance(value, dict):
+        for submetric, subvalue in value.iteritems():
+            if metric_prefix is None:
+                subprefix = metric
             else:
-                val.values = [value/aggregated_metrics['count']]
-            collectd.info("%s" %val)
-            val.dispatch()
+                subprefix = "%s-%s" %(metric_prefix, metric)
+            read_metric(submetric, subvalue, count, app, subprefix)
+            return
+    else:
+        val.values = [value/count]
+    collectd.info("%s" %val)
+    val.dispatch()
+
+
 
 def read_callback():
     """Read stats from configured slaves"""
