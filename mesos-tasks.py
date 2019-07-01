@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import collections
 import collectd
 import json
 import urllib2
@@ -8,6 +9,17 @@ import socket
 hostname = socket.gethostname()
 
 CONFIGS = []
+
+def merge_dicts(d1, d2):
+    """Recursively merge d2 into d1.
+    """
+    for k, v in d2.items():
+        if k not in d1:
+            d1[k] = d2[k]
+        elif isinstance(d1[k], dict) and isinstance(d2[k], collections.Mapping):
+            merge_dicts(d1[k], d2[k])
+        else:
+            d1[k] += d2[k]
 
 def configure_callback(conf):
     """Receive configuration"""
@@ -95,13 +107,10 @@ def read_stats(conf):
             if "do_not_track" in info["labels"]:
                 continue
 
-            for metric, value in task["statistics"].iteritems():
-                if metric == 'timestamp':
-                    continue
-                if metric in aggregated_metrics:
-                    aggregated_metrics[metric] += value 
-                else:
-                    aggregated_metrics[metric] = value
+            statistics = {k: v
+                          for k, v in task['statistics'].items()
+                          if k != 'timestamp'}
+            merge_dicts(aggregated_metrics, statistics)
         for metric, value in aggregated_metrics.iteritems():
             read_metric(metric, value, aggregated_metrics['count'], app, None)
 
